@@ -1,6 +1,6 @@
 # Model setup
 
-The computational model was designed with PhysiCell (version 1.8.0), and the previously developed ECM extension.
+The computational model was designed with PhysiCell (version 1.8.0), and the previously developed ECM extension. To compile the project, run `make`. Afterwards, the executable file can be run independently, or it can be integrated into our optimization framework.
 
 In addition, the model was extended to provide more control over the migration patterns in 3D, by restricting movement in the vertical component and favouring forward/backwards movement.
 
