@@ -786,6 +786,11 @@ Motility::Motility()
 	
 	migration_bias_direction.resize( 3 , 0.0 ); 
 	migration_bias = 0.0; 
+
+	vertical_restriction = 0.0;
+	lateral_restriction = 0.0;
+	forward_bias = 0.0;
+	forward_angle = 3.1415926535897932384626433832795*0.5;
 		
 	restrict_to_2D = false; 
 	

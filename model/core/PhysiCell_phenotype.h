@@ -394,6 +394,14 @@ class Motility
 		// random motility is biased in this direction (e.g., chemotaxis)
 	double migration_bias; // how biased is motility
 		// if 0, completely random. if 1, deterministic along the bias vector 
+
+	double vertical_restriction; // how much cells move vertically
+	  // if 1, cells move in 2D. if 0, cells move freely in 3D
+	double lateral_restriction; // how much cells move in the x direction
+	  // if 1, cells move in the y direction. if 0, cells move freely in x
+	double forward_bias; // how mch cells favour forward motility over backwards motion
+	  // if 1, cells move forward. if 0, cells can either move forward or backwards
+	double forward_angle; // defines the forward direction
 		
 	bool restrict_to_2D; 
 		// if true, set random motility to 2D only. 

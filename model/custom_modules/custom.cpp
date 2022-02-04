@@ -66,11 +66,12 @@
 */
 
 #include "./custom.h"
+#include <cmath>
 
 void create_cell_types( void )
 {
-	// set the random seed 
-	SeedRandom( parameters.ints("random_seed") );  
+	// set the random seed
+	SeedRandom( );
 	
 	/* 
 	   Put any modifications to default cell definition here if you 
@@ -83,7 +84,10 @@ void create_cell_types( void )
 	cell_defaults.phenotype.secretion.sync_to_microenvironment( &microenvironment ); 
 	
 	cell_defaults.functions.volume_update_function = standard_volume_update_function;
-	cell_defaults.functions.update_velocity = standard_update_cell_velocity;
+	cell_defaults.functions.update_velocity = drag_update_cell_velocity;
+	cell_defaults.phenotype.motility.lateral_restriction = parameters.doubles("lateral_restriction");
+	cell_defaults.phenotype.motility.vertical_restriction = parameters.doubles("vertical_restriction");
+	cell_defaults.phenotype.motility.forward_bias = parameters.doubles("forward_bias");
 
 	cell_defaults.functions.update_migration_bias = NULL; 
 	cell_defaults.functions.update_phenotype = NULL; // update_cell_and_death_parameters_O2_based; 
@@ -119,6 +123,58 @@ void create_cell_types( void )
 	return; 
 }
 
+double locomotive_force_generator( )
+{
+	// random number generator to define cell velocities
+	// based on anempirically obtained velocity distribution
+
+	double random_value, force_value;
+	double sigma = parameters.doubles("sigma");
+	
+	random_value = UniformRandom();
+	force_value = sigma * pow(-2 * log(random_value), 0.5);
+
+	return force_value;
+}
+
+
+void drag_update_cell_velocity( Cell* pCell, Phenotype& phenotype, double dt )
+{
+
+	// find location of variables and base parameter values
+	int ECM_density_index = microenvironment.find_density_index( "ECM" );
+
+	// sample ECM
+	double ECM_density = pCell->nearest_density_vector()[ECM_density_index];
+	double dyn_viscosity;
+
+	// get viscosity based on concentration
+	if(ECM_density == 2.5)
+	{
+		dyn_viscosity = 7.96;
+	}
+	else if(ECM_density == 4.0)
+	{
+		dyn_viscosity = 18.42;
+	}
+	else if(ECM_density == 6.0)
+	{
+		dyn_viscosity = 39.15;
+	}
+
+	// update the speed value
+	pCell->phenotype.motility.migration_speed = locomotive_force_generator();
+
+	// update velocity
+	standard_update_cell_velocity(pCell, phenotype, dt);
+
+	// include the 1/vu (1/ECM density) term to consider friction
+	pCell->velocity /= dyn_viscosity;
+
+	return;
+
+}
+
 void setup_microenvironment( void )
 {
 	// set domain parameters 
@@ -135,47 +191,53 @@ void setup_microenvironment( void )
 
 void setup_tissue( void )
 {
-	double Xmin = microenvironment.mesh.bounding_box[0]; 
-	double Ymin = microenvironment.mesh.bounding_box[1]; 
-	double Zmin = microenvironment.mesh.bounding_box[2]; 
 
-	double Xmax = microenvironment.mesh.bounding_box[3]; 
-	double Ymax = microenvironment.mesh.bounding_box[4]; 
-	double Zmax = microenvironment.mesh.bounding_box[5]; 
-	
-	if( default_microenvironment_options.simulate_2D == true )
-	{
-		Zmin = 0.0; 
-		Zmax = 0.0; 
-	}
-	
-	double Xrange = Xmax - Xmin; 
-	double Yrange = Ymax - Ymin; 
-	double Zrange = Zmax - Zmin; 
-	
-	// create some of each type of cell 
 	
 	Cell* pC;
+
+	Cell_Definition* pCD = cell_definitions_by_index[0]; 
+
+	double Xmin = -400; 
+	double Ymin = microenvironment.mesh.bounding_box[1]; 
+	double Zmin = -75; 
+
+	double Xmax = 400; 
+	double Ymax = microenvironment.mesh.bounding_box[4]; 
+	double Zmax = 75; 
 	
-	for( int k=0; k < cell_definitions_by_index.size() ; k++ )
+
+	double cell_radius = pCD->phenotype.geometry.radius; 
+	double spacing = 2.0 * cell_radius * 2.0; 
+	double half_space = 0.5*spacing; 
+	double y_offset = sqrt(3.0)*half_space; 
+	
+	
+	double x = Xmin + cell_radius; 
+	double y = Ymin + cell_radius; 
+	double z = Zmin + cell_radius; 
+	
+	int n = 0; 
+	
+	while( z <= Zmax - cell_radius )
 	{
-		Cell_Definition* pCD = cell_definitions_by_index[k]; 
-		std::cout << "Placing cells of type " << pCD->name << " ... " << std::endl; 
-		for( int n = 0 ; n < parameters.ints("number_of_cells") ; n++ )
+		while( x <= Xmax - cell_radius )
 		{
-			std::vector<double> position = {0,0,0}; 
-			position[0] = Xmin + UniformRandom()*Xrange; 
-			position[1] = Ymin + UniformRandom()*Yrange; 
-			position[2] = Zmin + UniformRandom()*Zrange; 
+			Cell* pC = create_cell( *pCD ); 
+			pC->assign_position( x,y,z ); 
 			
-			pC = create_cell( *pCD ); 
-			pC->assign_position( position );
+			x += spacing; 
 		}
+		x = Xmin + half_space; 
+		
+		n++; 
+		z += y_offset; 
+		if( n % 2 == 1 )
+		{ x += half_space; }
 	}
-	std::cout << std::endl; 
+	
 	
 	// load cells from your CSV file (if enabled)
-	load_cells_from_pugixml(); 	
+	// load_cells_from_pugixml(); 	
 	
 	return; 
 }

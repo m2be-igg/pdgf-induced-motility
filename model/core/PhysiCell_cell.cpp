@@ -225,12 +225,36 @@ void Cell::update_motility_vector( double dt_ )
 	
 	if( UniformRandom() < dt_ / phenotype.motility.persistence_time || phenotype.motility.persistence_time < dt_ )
 	{
-		// choose a uniformly random unit vector 
-		double temp_angle = 6.28318530717959*UniformRandom();
-		double temp_phi = 3.1415926535897932384626433832795*UniformRandom();
+		// if the update_bias_vector function is set, use it
+		if( functions.update_migration_bias )
+		{
+			functions.update_migration_bias( this,phenotype,dt_ );
+			phenotype.motility.forward_angle = atan2(phenotype.motility.migration_bias_direction[1], phenotype.motility.migration_bias_direction[0]);
+		}
+
+		// Limit cell motility in the x 
+		double temp_angle;
+
+		if( UniformRandom()  < phenotype.motility.forward_bias ) {
+			temp_angle = 3.1415926535897932384626433832795*((1 - phenotype.motility.lateral_restriction)*UniformRandom()
+					+ (-0.5 + phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
+		} else {
+			temp_angle = 3.1415926535897932384626433832795*((-1 + phenotype.motility.lateral_restriction)*UniformRandom()
+					+ (1.5 - phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
+		}
 		
+		// Limit cell motility in the z component
+		double temp_phi = 3.1415926535897932384626433832795*((1 - phenotype.motility.vertical_restriction)*UniformRandom()
+				+ phenotype.motility.vertical_restriction/2);
+
 		double sin_phi = sin(temp_phi);
 		double cos_phi = cos(temp_phi);
+
+		if( phenotype.motility.restrict_to_2D == true )
+		{
+			sin_phi = 1.0;
+			cos_phi = 0.0;
+		}
 		
 		if( phenotype.motility.restrict_to_2D == true )
 		{ 
@@ -244,23 +268,12 @@ void Cell::update_motility_vector( double dt_ )
 		randvec[0] *= cos( temp_angle ); // cos(theta)*sin(phi)
 		randvec[1] *= sin( temp_angle ); // sin(theta)*sin(phi)
 		randvec[2] = cos_phi; //  cos(phi)
-		
-		// if the update_bias_vector function is set, use it  
-		if( functions.update_migration_bias )
-		{
-			functions.update_migration_bias( this,phenotype,dt_ ); 
-		}
-		
-		phenotype.motility.motility_vector = phenotype.motility.migration_bias_direction; // motiltiy = bias_vector
-		phenotype.motility.motility_vector *= phenotype.motility.migration_bias; // motility = bias*bias_vector 
-		
-		double one_minus_bias = 1.0 - phenotype.motility.migration_bias; 
-		
-		axpy( &(phenotype.motility.motility_vector), one_minus_bias, randvec ); // motility = (1-bias)*randvec + bias*bias_vector
-		
-		normalize( &(phenotype.motility.motility_vector) ); 
-		
-		phenotype.motility.motility_vector *= phenotype.motility.migration_speed; 
+
+		phenotype.motility.motility_vector = randvec;
+
+		normalize( &(phenotype.motility.motility_vector) );
+
+		phenotype.motility.motility_vector *= phenotype.motility.migration_speed;
 	}	
 	return; 
 } 
