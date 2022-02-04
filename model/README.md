@@ -4,7 +4,7 @@ The computational model was designed with PhysiCell (version 1.8.0), and [our pr
 
 We offer the possibility to **restrict the lateral and vertical components independently**. This allows us to simulate the behaviour of cells embedded in 3D matrices that mostly favour 2D movement but still have a small 3D component. In addition, we model cell motility to **follow a given 2D direction**, with the ability to choose whether to **move towards or against this direction**, or adopt a random behaviour in regards to this decision. Cells may also **stray away from this direction in the lateral component**, based on a restriction factor.
 
-Furthermore, **we model cell forces magnitudes based on a Rayleigh distribution** and, to do so, we created a generator function that outputs new magnitude values based on this distribution and a given scale parameter ($\sigma$).
+Furthermore, **we model cell forces magnitudes based on a [Rayleigh distribution](https://en.wikipedia.org/wiki/Rayleigh_distribution)** and, to do so, we created a generator function that outputs new magnitude values based on this distribution and a given scale parameter ($\sigma$).
 
 With this in mind, our extension relies on four new cell components, added to the `Phenotype::Motility` PhysiCell class. These are used to compute the new direction of movement at every velocity update by the `Cell::update_motility_vector()` function.
 
@@ -103,7 +103,8 @@ if( UniformRandom() < dt_ / phenotype.motility.persistence_time || phenotype.mot
  {
   // Define the forward angle as the angle that defines the migration_bias_direction
   functions.update_migration_bias( this,phenotype,dt_ );
-  phenotype.motility.forward_angle = atan2(phenotype.motility.migration_bias_direction[1], phenotype.motility.migration_bias_direction[0]);
+  phenotype.motility.forward_angle = atan2(phenotype.motility.migration_bias_direction[1], 
+                                           phenotype.motility.migration_bias_direction[0]);
  }
 
  double temp_angle;
@@ -113,20 +114,20 @@ if( UniformRandom() < dt_ / phenotype.motility.persistence_time || phenotype.mot
   // Define the direction to follow in 2D:
   // a random value centered at forward_angle with a random component that depends on lateral_restriction
   temp_angle = 3.1415926535897932384626433832795*((1 - phenotype.motility.lateral_restriction)*UniformRandom()
-    + (-0.5 + phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
+               + (-0.5 + phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
  }
  // Define movement against the forward_angle direction
  else {
   // Define the direction to follow in 2D:
   // a random value centered at forward_angle with a random component that depends on lateral_restriction
   temp_angle = 3.1415926535897932384626433832795*((-1 + phenotype.motility.lateral_restriction)*UniformRandom()
-    + (1.5 - phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
+               + (1.5 - phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
  }
 
  // Limit cell motility in the 3D component:
  // a random value centered at 0 with a random component that depends on lateral_restriction
  double temp_phi = 3.1415926535897932384626433832795*((1 - phenotype.motility.vertical_restriction)*UniformRandom()
-   + phenotype.motility.vertical_restriction/2);
+                   + phenotype.motility.vertical_restriction/2);
 
 
 // ----EXTENSION ENDS HERE-------
@@ -241,14 +242,30 @@ The new components are used to **update parameter values** without the need to r
 
 ```xml
 <user_parameters>
-	<random_seed type="int" units="dimensionless">0</random_seed>
-	<div_initialization type="divider" description="---Initialization settings---"/>
-	<!-- EXTENSION STARTS HERE -->
-	<number_of_cells type="int" units="none" description="initial number of cells (for each cell type)">5</number_of_cells>
-	<sigma type="double" units="none" description="Rayleigh distribution mean">2.8</sigma>
-	<lateral_restriction type="double" units="none" description="Lateral restriction factor">0.36</lateral_restriction>
-	<vertical_restriction type="double" units="none" description="Vertical restriction factor">0.89</vertical_restriction>
-	<forward_bias type="double" units="none" description="Forward movement factor">0.56</forward_bias>
-	<!-- EXTENSION ENDS HERE -->
+ <random_seed type="int" units="dimensionless">0</random_seed>
+ <div_initialization type="divider" description="---Initialization settings---"/>
+
+ <!-- EXTENSION STARTS HERE -->
+ <number_of_cells type="int" units="none" description="initial number of cells (for each cell type)">
+  5
+ </number_of_cells>
+ 
+ <sigma type="double" units="none" description="Rayleigh distribution mean">
+  2.8
+ </sigma>
+
+ <lateral_restriction type="double" units="none" description="Lateral restriction factor">
+  0.36
+ </lateral_restriction>
+
+ <vertical_restriction type="double" units="none" description="Vertical restriction factor">
+  0.89
+ </vertical_restriction>
+
+ <forward_bias type="double" units="none" description="Forward movement factor">
+  0.56
+ </forward_bias>
+ <!-- EXTENSION ENDS HERE -->
+
 </user_parameters>
 ```
