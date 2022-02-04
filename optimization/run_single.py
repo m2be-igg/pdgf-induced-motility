@@ -16,32 +16,41 @@ DAYS = [1, 2, 3, 4]
 def run_pipeline(sigma: float, 
                 lateral_restriction: float, vertical_restriction: float, 
                 forward_bias: float,
-                 persistence_time: float,
-                 cell_cell_adhesion_strength: float,
-                 cell_cell_repulsion_strength: float):
-    # Run the simulation with the given parameter values
-    update_config_file(sigma, lateral_restriction, vertical_restriction, forward_bias,
-                       persistence_time,
-                       cell_cell_adhesion_strength,
-                       cell_cell_repulsion_strength)
+                persistence_time: float,
+                cell_cell_adhesion_strength: float,
+                cell_cell_repulsion_strength: float):
 
+    # Run the simulation with the given parameter values
+    optimization.update_config_file(sigma, lateral_restriction, vertical_restriction, forward_bias,
+                                    persistence_time,
+                                    cell_cell_adhesion_strength,
+                                    cell_cell_repulsion_strength)
+
+    # Create a list to store the similarity values for each model replicate
     similarity_values = []
 
     for i in range(NUMBER_OF_REPLICATES):
-        subprocess.run('bash replicates.sh', shell=True)
+        # Run the model
+        subprocess.run('./project', shell=True)
+
+        # Save the output data into a DataFrame
         print("now creating DF")
-        cells_df = read_results_into_df(FINAL_OUTPUT_PATH)
+        cells_df = optimization.read_results_into_df(FINAL_OUTPUT_PATH)
+        cells_df.to_csv(f'./saved_dfs/dist_measure_{i}.csv', index=False)
+
+        # Compute the BC between the model results and the experimental data
         print("now computing similarity")
-        bc = optimization.compute_distance_histograms(cells_df,
+        similarity = optimization.compute_distance_histograms(cells_df,
                                                       EXPERIMENTAL_DATA_PATH,
                                                       EXPERIMENTAL_STEM,
                                                       DAYS)
         print(f'similarity: {similarity}')
         similarity_values.append(similarity)
-        cells_df.to_csv(f'./saved_dfs/dist_measure_{i}.csv', index=False)
 
+    # Print the results for all the replicates
     print(f'mean BC: {np.mean(similarity_values)}')
     print(f'std BC: {np.std(similarity_values)}')
+
     return similarity_values, cells_df
  
 

@@ -30,17 +30,17 @@ def run_pipeline(sigma: float,
     lateral_restriction = 0.36
 
     # Run the simulation with new parameter values
-    update_config_file(sigma, lateral_restriction, vertical_restriction, forward_bias,
+    optimization.update_config_file(sigma, lateral_restriction, vertical_restriction, forward_bias,
                        persistence_time,
                        cell_cell_adhesion_strength,
                        cell_cell_repulsion_strength)
 
     similarity_values = []
 
-    for _ in range(NUMBER_OF_REPLICATES)):
+    for _ in range(NUMBER_OF_REPLICATES):
         subprocess.run('bash replicates.sh', shell=True)
         print("now creating DF")
-        cells_df = read_results_into_df(FINAL_OUTPUT_PATH)
+        cells_df = optimization.read_results_into_df(FINAL_OUTPUT_PATH)
         print("now computing similarity")
         bc = optimization.compute_distance_histograms(cells_df,
                                                       EXPERIMENTAL_DATA_PATH,
@@ -48,7 +48,7 @@ def run_pipeline(sigma: float,
                                                       DAYS)
         print(f'similarity: {bc}')
 
-        remove_dir(Path('final_output'))
+        optimization.remove_dir(Path('final_output'))
 
         similarity_values.append(bc)
 
@@ -58,7 +58,7 @@ def run_pipeline(sigma: float,
 
 
 if __name__ == '__main__':
-    logger = JSONLogger(path="./logs.json")
+    # logger = JSONLogger(path="./logs.json")
     bounds_transformer = SequentialDomainReductionTransformer()
     optimizer = BayesianOptimization(f=run_pipeline,
                                      pbounds=PARAMS,
@@ -74,6 +74,6 @@ if __name__ == '__main__':
         lazy=True
     )
 
-    optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
+    # optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
     optimizer.maximize(init_points=3,
                        n_iter=25)

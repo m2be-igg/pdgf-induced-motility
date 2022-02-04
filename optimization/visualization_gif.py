@@ -4,7 +4,7 @@ from pathlib import Path
 from vedo import Plotter, ProgressBar, screenshot
 
 import animations
-import physipy
+import optimization
 
 output_path = Path('output/')
 variables = ['position_x', 'position_y', 'position_z']
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # Plot and save the results for each time point
     for timestep in progress_bar.range():
         # Get cell data
-        cell_data = physipy.get_cell_data(timestep, output_path, variables)
+        cell_data = optimization.get_cell_data(timestep, output_path, variables)
         positions = [[x, y, z]
                      for x, y, z in zip(cell_data['position_x'],
                                         cell_data['position_y'],

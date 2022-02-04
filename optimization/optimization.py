@@ -6,11 +6,48 @@ from typing import List, Dict
 
 import numpy as np
 import pandas as pd
-
-import physipy
+from scipy import io as sio
 
 NUMBER_OF_BINS = 30
 HIST_RANGE = 650
+
+
+def get_cell_data(timestep: float, folder_name: Path, variables = List[str]):
+    """Returns a dictionary with the cell output data for the selected variables."""
+
+    # All possible output variables written by PhysiCell
+    data_labels = [
+        'ID',
+        'position_x', 'position_y', 'position_z',
+        'total_volume',
+        'cell_type',
+        'cycle_model', 'current_phase', 'elapsed_time_in_phase',
+        'nuclear_volume', 'cytoplasmic_volume',
+        'fluid_fraction', 'calcified_fraction',
+        'orientation_x', 'orientation_y', 'orientation_z',
+        'polarity',
+        'migration_speed',
+        'motility_vector_x', 'motility_vector_y', 'motility_vector_z',
+        'migration_bias',
+        'motility_bias_direction_x', 'motility_bias_direction_y', 'motility_bias_direction_z',
+        'persistence_time',
+        'motility_reserved'
+    ]
+
+    # Create path name
+    time_str = str(timestep).zfill(8)
+    file_name = 'output{}_cells_physicell.mat'.format(time_str)
+    path_name = folder_name / file_name
+
+    # Read output file
+    cell_data = sio.loadmat(path_name)['cells']
+
+    # Select and save the variables of interest
+    variables_indexes = [data_labels.index(var) for var in variables]
+    cells = {var: cell_data[index, :]
+             for var, index in zip (variables, variables_indexes)}
+
+    return cells
 
 
 def update_config_file(sigma: float,
@@ -75,7 +112,7 @@ def read_results_into_df(output_path: Path) -> pd.DataFrame:
 
     for replicate in replicates:
         for timestep in range(number_of_output_files):
-            cell_data = physipy.get_cell_data(timestep, replicate, variables)
+            cell_data = get_cell_data(timestep, replicate, variables)
             cell_df = pd.DataFrame(cell_data)
             cell_df['timestep'] = timestep
             cell_df['replicate'] = replicate

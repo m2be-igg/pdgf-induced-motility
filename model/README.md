@@ -30,8 +30,6 @@ With this in mind, our extension relies on four new cell components, added to th
 
 - `sigma`: defines the Rayleigh distribution used to generate new magnitude values for the cell-generated locomotive forces;
 
-![force_diagram](assets/force-diagram.png)
-
 ## Running our model
 
 **We provide all the necessary files to compile and run our model**. To compile the model, run `make`. Afterwards, the executable file (named `project` or `project.exe`, depending on your operating system) can be run independently, or it can be integrated into our optimization framework.
