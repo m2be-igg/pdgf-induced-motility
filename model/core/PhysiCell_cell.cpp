@@ -225,25 +225,42 @@ void Cell::update_motility_vector( double dt_ )
 	
 	if( UniformRandom() < dt_ / phenotype.motility.persistence_time || phenotype.motility.persistence_time < dt_ )
 	{
-		// if the update_bias_vector function is set, use it
+		// Limit cell motility in the 2D component:
+		// A random angle is chosen based on the lateral_restriction, forward_bias and forward_angle values
+		// forward_angle: defines the direction that the cell will foloow or move away from (e.g., a chemoattractant)
+		//				  if the migration_bias feature is active, the forward_angle will be set based on this gradient
+		// lateral_restriction: defines how much cells are able to stray away from the forward_angle, in the lateral component
+		//                      for high restriction values, the cells always follow this direction
+		//                      for low restriction values, cells have more freedom to stray away from the forward_angle direction
+		// forward_bias: defines whether cells move towards or away from the direction defined by forward_angle
+		//				 for forward_bias values close to 1, cells always move towards this direction
+		//               for forward_bias values close to 0, cells always move away from this direction
+		//               for forward_bias values close to 0.5, cells have a 50% chance to either move towards or against this direction
+
+		// If the update_bias_vector function is set, use it
 		if( functions.update_migration_bias )
 		{
+			// Define the forward angle as the angle that defines the migration_bias_direction
 			functions.update_migration_bias( this,phenotype,dt_ );
 			phenotype.motility.forward_angle = atan2(phenotype.motility.migration_bias_direction[1], phenotype.motility.migration_bias_direction[0]);
 		}
 
-		// Limit cell motility in the x 
 		double temp_angle;
 
+		// Define movement towards the forward_angle direction
 		if( UniformRandom()  < phenotype.motility.forward_bias ) {
+			// Define the direction to follow in 2D: a random value centered at forward_angle with a random component that depends on lateral_restriction
 			temp_angle = 3.1415926535897932384626433832795*((1 - phenotype.motility.lateral_restriction)*UniformRandom()
 					+ (-0.5 + phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
-		} else {
+		} 
+		// Define movement against the forward_angle direction
+		else {
+			// Define the direction to follow in 2D: a random value centered at forward_angle with a random component that depends on lateral_restriction
 			temp_angle = 3.1415926535897932384626433832795*((-1 + phenotype.motility.lateral_restriction)*UniformRandom()
 					+ (1.5 - phenotype.motility.lateral_restriction/2)) + phenotype.motility.forward_angle;
 		}
 		
-		// Limit cell motility in the z component
+		// Limit cell motility in the 3D component: a random value centered at 0 with a random component that depends on lateral_restriction
 		double temp_phi = 3.1415926535897932384626433832795*((1 - phenotype.motility.vertical_restriction)*UniformRandom()
 				+ phenotype.motility.vertical_restriction/2);
 
@@ -380,7 +397,7 @@ Cell::~Cell()
 	if( result != std::end(*all_cells) )
 	{
 		std::cout << "Warning: Cell was never removed from data structure " << std::endl ; 
-		std::cout << "I am of type " << this->type << " at " << this->position << std::endl; 
+		//std::cout << "I am of type " << this->type << " at " << this->position << std::endl; 
 
 		int temp_index = -1; 
 		bool found = false; 

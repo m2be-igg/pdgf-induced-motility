@@ -126,7 +126,7 @@ void create_cell_types( void )
 double locomotive_force_generator( )
 {
 	// random number generator to define cell velocities
-	// based on anempirically obtained velocity distribution
+	// based on a Rayleigh distribution
 
 	double random_value, force_value;
 	double sigma = parameters.doubles("sigma");
@@ -191,53 +191,47 @@ void setup_microenvironment( void )
 
 void setup_tissue( void )
 {
-
-	
 	Cell* pC;
-
 	Cell_Definition* pCD = cell_definitions_by_index[0]; 
 
+	/// Create a grid on top of one of bounding walls to represent a cell monolayer
+	// Set the boundaries of the grid
 	double Xmin = -400; 
-	double Ymin = microenvironment.mesh.bounding_box[1]; 
-	double Zmin = -75; 
-
 	double Xmax = 400; 
+	double Ymin = microenvironment.mesh.bounding_box[1]; 
 	double Ymax = microenvironment.mesh.bounding_box[4]; 
+	double Zmin = -75; 
 	double Zmax = 75; 
 	
-
+	// Set the spacing between each cell to create a grid with a offset in each row
+	// This allows for cells to be more packed
 	double cell_radius = pCD->phenotype.geometry.radius; 
 	double spacing = 2.0 * cell_radius * 2.0; 
 	double half_space = 0.5*spacing; 
 	double y_offset = sqrt(3.0)*half_space; 
+	int n = 0; 
 	
-	
+	// Set the position for the first cell
 	double x = Xmin + cell_radius; 
 	double y = Ymin + cell_radius; 
 	double z = Zmin + cell_radius; 
 	
-	int n = 0; 
-	
+	// Go through the grid, adding a new cell at each position
 	while( z <= Zmax - cell_radius )
 	{
 		while( x <= Xmax - cell_radius )
 		{
 			Cell* pC = create_cell( *pCD ); 
 			pC->assign_position( x,y,z ); 
-			
 			x += spacing; 
 		}
-		x = Xmin + half_space; 
-		
-		n++; 
+		x = Xmin + half_space;
 		z += y_offset; 
+		n++; 
+
 		if( n % 2 == 1 )
 		{ x += half_space; }
-	}
-	
-	
-	// load cells from your CSV file (if enabled)
-	// load_cells_from_pugixml(); 	
+	}	
 	
 	return; 
 }
