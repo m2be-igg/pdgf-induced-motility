@@ -10,7 +10,7 @@ mkdir -p final_output
 for i in $(seq $numberOfReplicates)
 do
    # (change project3D to the name of the PhysiCell project you want to run)
-   ./project
+   project.exe
 
    # Store the results in the general results folder
    mkdir ./final_output/output$i

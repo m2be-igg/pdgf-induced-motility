@@ -6,4 +6,4 @@
 
 `/optimization` - scripts for model optimization, reading simulation data and displaying simulation results
 
-`data_analysis` - notebooks used to clean experimental data and analyse experimental/computational results
+`/data_analysis` - notebooks used to clean experimental data and analyse experimental/computational results
