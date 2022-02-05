@@ -7,9 +7,9 @@ import numpy as np
 import optimization
 
 FINAL_OUTPUT_PATH = Path('final_output')
-EXPERIMENTAL_DATA_PATH = Path('../data-analysis/processed_data')
+EXPERIMENTAL_DATA_PATH = Path('../data-analysis/processed-data')
 EXPERIMENTAL_STEM = '4mg_control_hist_day'
-NUMBER_OF_REPLICATES = 2
+NUMBER_OF_REPLICATES = 3
 DAYS = [1, 2, 3, 4]
 
 
@@ -46,6 +46,8 @@ def run_pipeline(sigma: float,
         print(f'similarity: {similarity}')
         similarity_values.append(similarity)
 
+        optimization.remove_dir(FINAL_OUTPUT_PATH)
+
     # Print the results for all the replicates
     print(f'mean BC: {np.mean(similarity_values)}')
     print(f'std BC: {np.std(similarity_values)}')
@@ -54,11 +56,11 @@ def run_pipeline(sigma: float,
 
 
 if __name__ == '__main__':
-    sigma = 2.4
+    sigma = 2.8
     lateral_restriction = 0.36
-    vertical_restriction = 0.76
-    forward_bias = 0.55
-    persistence_time = 21.0
+    vertical_restriction = 0.89
+    forward_bias = 0.56
+    persistence_time = 49.8
     cell_cell__adhesion_strength = 8.5
     cell_cell__repulsion_strength = 52.0
 
