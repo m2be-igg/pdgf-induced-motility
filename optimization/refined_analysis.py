@@ -10,7 +10,7 @@ from bayes_opt.event import Events
 import optimization
 
 FINAL_OUTPUT_PATH = Path('final_output')
-EXPERIMENTAL_DATA_PATH = Path('experimental/processed_data')
+EXPERIMENTAL_DATA_PATH = Path('../data-analysis/processed-data')
 EXPERIMENTAL_STEM = '4mg_control_hist_day'
 NUMBER_OF_REPLICATES = 3
 DAYS = [1, 2, 3, 4]
@@ -22,7 +22,7 @@ PARAMS = {'sigma': (0.0, 6.0),
 def run_pipeline(sigma: float,
                  forward_bias: float,
                  persistence_time: float):
-    """Runs the optimization pipeline with fixed values for some of the parameters"""
+    """Runs the optimization pipeline with fixed values for some parameters"""
 
     cell_cell_adhesion_strength = 8.5
     cell_cell_repulsion_strength = 52.0
@@ -31,9 +31,9 @@ def run_pipeline(sigma: float,
 
     # Run the simulation with new parameter values
     optimization.update_config_file(sigma, lateral_restriction, vertical_restriction, forward_bias,
-                       persistence_time,
-                       cell_cell_adhesion_strength,
-                       cell_cell_repulsion_strength)
+                                    persistence_time,
+                                    cell_cell_adhesion_strength,
+                                    cell_cell_repulsion_strength)
 
     similarity_values = []
 

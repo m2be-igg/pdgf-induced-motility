@@ -10,7 +10,7 @@ from bayes_opt.event import Events
 import optimization
 
 FINAL_OUTPUT_PATH = Path('final_output')
-EXPERIMENTAL_DATA_PATH = Path('experimental/processed_data')
+EXPERIMENTAL_DATA_PATH = Path('../data-analysis/processed-data')
 EXPERIMENTAL_STEM = '4mg_control_hist_day'
 NUMBER_OF_REPLICATES = 3
 DAYS = [1, 2, 3, 4]
@@ -57,7 +57,7 @@ def run_pipeline(sigma, lateral_restriction, vertical_restriction,
 
 
 if __name__ == '__main__':
-    logger = JSONLogger(path="./logs.json")
+    #logger = JSONLogger(path="./logs.json")
     bounds_transformer = SequentialDomainReductionTransformer()
     optimizer = BayesianOptimization(f=run_pipeline,
                                      pbounds=PARAMS,
@@ -65,6 +65,6 @@ if __name__ == '__main__':
                                      random_state=1,
                                      bounds_transformer=bounds_transformer)
 
-    optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
+    #optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
     optimizer.maximize(init_points=3,
-                       n_iter=15)
+                       n_iter=4)
