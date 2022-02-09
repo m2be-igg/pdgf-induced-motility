@@ -8,7 +8,7 @@ import sys
 sys.path.insert(1, '../optimization')
 import optimization
 
-output_path = Path('dist-data/1ch-96h-control/replicate1/')
+output_path = Path('distances-data/1ch-96h-control/replicate1/')
 variables = ['position_x', 'position_y', 'position_z']
 timestep = 4
 
