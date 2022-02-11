@@ -17,3 +17,8 @@ The scripts provided in this repository can be used in combination with our mode
 - `first_analysis.py` - A script that runs a first analysis with no known initial optimal points and that varies a large number of parameters;
 - `refined_analysis.py` - A script that runs the optimization pipeline for a smaller number of parameters and probes a region of interest at the start of the pipeline;
 - `run_single.py` - A script that runs the base model of the pipeline, without going into optimization;
+
+
+## PhysiCell directory structure
+
+To run a PhysiCell model, the current directory should include the PhysiCell executable file, a folder called `config` where the PhysiCell config XML file is stored, and a folder called `output`, in which results will be saved by the executable. We also create a new folder called `final_output` to store output data for replicates.
